@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dckit"
+version = "0.1.0"
+description = "Discrete-codebook taxonomy middleware for local vector-DB knowledge bases"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Kamil Rybacki", email = "kamilandrzejrybacki@gmail.com" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "numpy>=1.24,<3.0",
+    "scikit-learn>=1.3,<2.0",
+    "httpx>=0.25,<1.0",
+]
+
+[project.optional-dependencies]
+qdrant = ["qdrant-client>=1.7"]
+mcp = ["mcp>=1.2"]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "bandit>=1.7",
+]
+
+[project.scripts]
+dckit-mcp = "dckit.cli.mcp_launcher:main"
+
+[project.urls]
+Homepage = "https://github.com/kamilrybacki/dckit"
+Issues = "https://github.com/kamilrybacki/dckit/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dckit"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+ignore = ["E501", "RUF002", "RUF003"]  # Greek/math symbols in docstrings are fine
+
+[tool.pytest.ini_options]
+markers = [
+    "unit: fast unit tests",
+    "integration: needs vector DB / LLM",
+]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+disallow_untyped_defs = true
