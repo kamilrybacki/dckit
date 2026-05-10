@@ -101,7 +101,7 @@ def _flush(
     arr = np.stack(vecs).astype(np.float32)
     tags = tagger.tag(arr)
     for i, idx in zip(ids, tags, strict=False):
-        backend.set_payload([i], {"l1_argmax": int(idx), "jd_area": cb.label(int(idx))})
+        backend.set_payload([i], {"codebook_idx": int(idx), "codebook_label": cb.label(int(idx))})
     return len(ids)
 
 
@@ -131,7 +131,7 @@ def cmd_select(args: argparse.Namespace) -> int:
     )
     chosen = AreaMMR(gamma=args.gamma).select(candidates, k=args.k)
     for c in chosen:
-        print(f"  {c.id} score={c.score:.3f} area={c.payload.get('l1_argmax')}")
+        print(f"  {c.id} score={c.score:.3f} area={c.payload.get('codebook_idx')}")
     return 0
 
 

@@ -20,8 +20,8 @@ def small_codebook() -> Codebook:
     return Codebook(
         embeddings=embeddings,
         labels=("00 — Alpha", "10 — Beta", "20 — Gamma", "30 — Delta"),
-        min_val=-1.0,
-        max_val=1.0,
+        score_min=-1.0,
+        score_max=1.0,
         metadata={"test": True},
     )
 
@@ -29,11 +29,11 @@ def small_codebook() -> Codebook:
 @pytest.fixture()
 def candidates() -> list[Candidate]:
     return [
-        Candidate(id="a", score=0.95, payload={"l1_argmax": 0}),
-        Candidate(id="b", score=0.92, payload={"l1_argmax": 0}),
-        Candidate(id="c", score=0.91, payload={"l1_argmax": 1}),
-        Candidate(id="d", score=0.85, payload={"l1_argmax": 2}),
-        Candidate(id="e", score=0.80, payload={"l1_argmax": 3}),
+        Candidate(id="a", score=0.95, payload={"codebook_idx": 0}),
+        Candidate(id="b", score=0.92, payload={"codebook_idx": 0}),
+        Candidate(id="c", score=0.91, payload={"codebook_idx": 1}),
+        Candidate(id="d", score=0.85, payload={"codebook_idx": 2}),
+        Candidate(id="e", score=0.80, payload={"codebook_idx": 3}),
     ]
 
 
@@ -161,8 +161,8 @@ def stub_llm_factory() -> Any:
 
 
 def candidate_with(score: float, area: int) -> Candidate:
-    return Candidate(id=f"x{area}-{score}", score=score, payload={"l1_argmax": area})
+    return Candidate(id=f"x{area}-{score}", score=score, payload={"codebook_idx": area})
 
 
 def make_simple_namespace_candidate(score: float, area: int) -> SimpleNamespace:
-    return SimpleNamespace(score=score, payload={"l1_argmax": area}, id="ns")
+    return SimpleNamespace(score=score, payload={"codebook_idx": area}, id="ns")

@@ -25,8 +25,8 @@ def main() -> None:
     cb = Codebook(
         embeddings=centers,
         labels=("00 — Tools", "10 — Concepts", "20 — Workflows", "30 — Reference"),
-        min_val=-1.0,
-        max_val=1.0,
+        score_min=-1.0,
+        score_max=1.0,
         metadata={"source": "quickstart"},
     )
 
@@ -38,7 +38,7 @@ def main() -> None:
         Candidate(
             id=f"chunk-{i}",
             score=float(0.95 - i * 0.01),
-            payload={"l1_argmax": int(t)},
+            payload={"codebook_idx": int(t)},
         )
         for i, t in enumerate(tags)
     ]
@@ -49,7 +49,7 @@ def main() -> None:
     print(f"codebook hash: {cb.content_hash()}")
     print(f"selected {len(chosen)} from {len(candidates)} candidates")
     for c in chosen:
-        print(f"  {c.id}  score={c.score:.3f}  area={cb.label(c.payload['l1_argmax'])}")
+        print(f"  {c.id}  score={c.score:.3f}  area={cb.label(c.payload['codebook_idx'])}")
 
 
 if __name__ == "__main__":

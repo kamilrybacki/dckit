@@ -121,7 +121,7 @@ def build_server(wiring: ServerWiring) -> Any:
                 name="select_diverse",
                 description=(
                     "Apply AreaMMR over a list of candidates. "
-                    "Each candidate must be {id, score, l1_argmax}."
+                    "Each candidate must be {id, score, codebook_idx}."
                 ),
                 inputSchema={
                     "type": "object",
@@ -133,9 +133,9 @@ def build_server(wiring: ServerWiring) -> Any:
                                 "properties": {
                                     "id": {"type": "string"},
                                     "score": {"type": "number"},
-                                    "l1_argmax": {"type": "integer"},
+                                    "codebook_idx": {"type": "integer"},
                                 },
-                                "required": ["id", "score", "l1_argmax"],
+                                "required": ["id", "score", "codebook_idx"],
                             },
                         },
                         "k": {"type": "integer", "minimum": 1, "default": 10},
@@ -195,8 +195,8 @@ def _codebook_info(cb: Codebook) -> dict[str, Any]:
         "dim": cb.dim,
         "labels": list(cb.labels),
         "content_hash": cb.content_hash(),
-        "min_val": cb.min_val,
-        "max_val": cb.max_val,
+        "score_min": cb.score_min,
+        "score_max": cb.score_max,
         "metadata": cb.metadata,
     }
 
@@ -267,7 +267,7 @@ def _select_diverse(args: dict[str, Any]) -> dict[str, Any]:
         Candidate(
             id=str(c["id"]),
             score=float(c["score"]),
-            payload={"l1_argmax": int(c["l1_argmax"])},
+            payload={"codebook_idx": int(c["codebook_idx"])},
         )
         for c in raw
     ]
@@ -275,7 +275,7 @@ def _select_diverse(args: dict[str, Any]) -> dict[str, Any]:
     chosen = selector.select(candidates, k)
     return {
         "selected": [
-            {"id": c.id, "score": c.score, "l1_argmax": c.payload["l1_argmax"]}
+            {"id": c.id, "score": c.score, "codebook_idx": c.payload["codebook_idx"]}
             for c in chosen
         ],
     }

@@ -46,12 +46,12 @@ class AreaMMR:
         recall).
     payload_key:
         Field on candidate.payload that holds the discrete area id. Defaults
-        to ``l1_argmax`` (matching the dckit ingest convention).
+        to ``codebook_idx`` (matching the dckit ingest convention).
     """
 
     lambda_: float = 0.7
     gamma: float = 0.10
-    payload_key: str = "l1_argmax"
+    payload_key: str = "codebook_idx"
 
     def select(self, candidates: list[Any], k: int) -> list[Any]:
         if not candidates:
@@ -99,7 +99,7 @@ class FullMMR:
 
     lambda_: float = 0.7
     gamma: float = 0.10
-    payload_key: str = "l1_argmax"
+    payload_key: str = "codebook_idx"
 
     def select(
         self,

@@ -27,7 +27,7 @@ class Codebook:
         L2-normalised at construction.
     labels:
         Length-K list of human-readable area labels (e.g. "70 — Systems").
-    min_val, max_val:
+    score_min, score_max:
         Calibration constants used by tagger to map raw cosine scores to
         [0, 1]. Stored from discovery time; may be ignored by callers that
         do their own normalisation.
@@ -37,8 +37,8 @@ class Codebook:
 
     embeddings: np.ndarray
     labels: tuple[str, ...]
-    min_val: float
-    max_val: float
+    score_min: float
+    score_max: float
     metadata: dict[str, Any]
 
     def __post_init__(self) -> None:
@@ -48,8 +48,8 @@ class Codebook:
             raise ValueError(
                 f"labels length {len(self.labels)} != K {self.embeddings.shape[0]}"
             )
-        if self.max_val <= self.min_val:
-            raise ValueError(f"max_val {self.max_val} <= min_val {self.min_val}")
+        if self.score_max <= self.score_min:
+            raise ValueError(f"score_max {self.score_max} <= score_min {self.score_min}")
 
     @property
     def k(self) -> int:
@@ -74,10 +74,10 @@ class Codebook:
         path.parent.mkdir(parents=True, exist_ok=True)
         np.savez(
             path,
-            embeddings=self.embeddings.astype(np.float32),
+            codebook_centers=self.embeddings.astype(np.float32),
             labels=np.array(self.labels, dtype=object),
-            min_val=np.array([self.min_val], dtype=np.float32),
-            max_val=np.array([self.max_val], dtype=np.float32),
+            score_min=np.array([self.score_min], dtype=np.float32),
+            score_max=np.array([self.score_max], dtype=np.float32),
         )
         sidecar = path.with_suffix(".json")
         sidecar.write_text(
@@ -86,8 +86,8 @@ class Codebook:
                     "k": self.k,
                     "dim": self.dim,
                     "labels": list(self.labels),
-                    "min_val": self.min_val,
-                    "max_val": self.max_val,
+                    "score_min": self.score_min,
+                    "score_max": self.score_max,
                     "content_hash": self.content_hash(),
                     "metadata": self.metadata,
                 },
@@ -101,10 +101,12 @@ class Codebook:
     def load(cls, path: str | Path) -> Codebook:
         path = Path(path)
         data = np.load(path, allow_pickle=True)
-        embeddings = np.asarray(data["embeddings"], dtype=np.float32)
+        # Disk key is `codebook_centers`; in-memory attribute keeps name
+        # `embeddings` for clarity within the dataclass.
+        embeddings = np.asarray(data["codebook_centers"], dtype=np.float32)
         labels = tuple(str(s) for s in data["labels"].tolist())
-        min_val = float(data["min_val"][0])
-        max_val = float(data["max_val"][0])
+        score_min = float(data["score_min"][0])
+        score_max = float(data["score_max"][0])
         sidecar = path.with_suffix(".json")
         metadata: dict[str, Any] = {}
         if sidecar.exists():
@@ -115,8 +117,8 @@ class Codebook:
         return cls(
             embeddings=embeddings,
             labels=labels,
-            min_val=min_val,
-            max_val=max_val,
+            score_min=score_min,
+            score_max=score_max,
             metadata=metadata,
         )
 
@@ -157,7 +159,7 @@ class Codebook:
         return cls(
             embeddings=means,
             labels=tuple(labels),
-            min_val=float(scores.min()),
-            max_val=float(scores.max()),
+            score_min=float(scores.min()),
+            score_max=float(scores.max()),
             metadata=metadata or {},
         )

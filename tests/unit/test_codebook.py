@@ -14,8 +14,8 @@ def test_codebook_validates_shape() -> None:
         Codebook(
             embeddings=np.zeros((4,)),
             labels=("a",) * 4,
-            min_val=-1.0,
-            max_val=1.0,
+            score_min=-1.0,
+            score_max=1.0,
             metadata={},
         )
 
@@ -26,20 +26,20 @@ def test_codebook_validates_labels_match() -> None:
         Codebook(
             embeddings=np.zeros((4, 8), dtype=np.float32),
             labels=("a", "b"),
-            min_val=-1.0,
-            max_val=1.0,
+            score_min=-1.0,
+            score_max=1.0,
             metadata={},
         )
 
 
 @pytest.mark.unit
 def test_codebook_validates_calibration() -> None:
-    with pytest.raises(ValueError, match="max_val"):
+    with pytest.raises(ValueError, match="score_max"):
         Codebook(
             embeddings=np.zeros((1, 4), dtype=np.float32),
             labels=("only",),
-            min_val=1.0,
-            max_val=0.5,
+            score_min=1.0,
+            score_max=0.5,
             metadata={},
         )
 
@@ -52,8 +52,8 @@ def test_save_load_round_trip(tmp_path) -> None:
     cb = Codebook(
         embeddings=emb,
         labels=("00 — A", "10 — B", "20 — C"),
-        min_val=-0.5,
-        max_val=0.9,
+        score_min=-0.5,
+        score_max=0.9,
         metadata={"model": "stub", "seed": 0},
     )
     path = tmp_path / "cb.npz"
@@ -63,8 +63,8 @@ def test_save_load_round_trip(tmp_path) -> None:
     loaded = Codebook.load(path)
     np.testing.assert_allclose(loaded.embeddings, cb.embeddings, rtol=1e-6)
     assert loaded.labels == cb.labels
-    assert loaded.min_val == pytest.approx(cb.min_val)
-    assert loaded.max_val == pytest.approx(cb.max_val)
+    assert loaded.score_min == pytest.approx(cb.score_min)
+    assert loaded.score_max == pytest.approx(cb.score_max)
     assert loaded.metadata == cb.metadata
 
 

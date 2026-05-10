@@ -36,7 +36,7 @@ class Tagger:
 
     def __init__(self, codebook: Codebook) -> None:
         self._cb = codebook
-        self._range = codebook.max_val - codebook.min_val
+        self._range = codebook.score_max - codebook.score_min
 
     def project(self, vectors: np.ndarray) -> np.ndarray:
         """Compute (N, K) raw cosine scores against class means."""
@@ -52,7 +52,7 @@ class Tagger:
         """Project + min-max normalise to [0, 1] using calibration constants."""
         scores = self.project(vectors)
         if self._range > 1e-10:
-            return np.clip((scores - self._cb.min_val) / self._range, 0.0, 1.0)
+            return np.clip((scores - self._cb.score_min) / self._range, 0.0, 1.0)
         return np.zeros_like(scores)
 
     def tag(self, vectors: np.ndarray) -> np.ndarray:

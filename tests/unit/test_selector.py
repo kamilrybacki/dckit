@@ -13,7 +13,7 @@ from dckit.selector import AreaMMR, FullMMR
 def test_area_mmr_diverse_at_gamma_high(candidates: list[Candidate]) -> None:
     """High gamma forces diversity across areas."""
     chosen = AreaMMR(gamma=0.5).select(candidates, k=4)
-    areas = [c.payload["l1_argmax"] for c in chosen]
+    areas = [c.payload["codebook_idx"] for c in chosen]
     assert len(set(areas)) == 4, f"expected 4 distinct areas, got {areas}"
 
 
@@ -58,7 +58,7 @@ def test_area_mmr_custom_payload_key() -> None:
 
 @pytest.mark.unit
 def test_full_mmr_requires_vectors() -> None:
-    cands = [Candidate(id="a", score=0.9, payload={"l1_argmax": 0})]
+    cands = [Candidate(id="a", score=0.9, payload={"codebook_idx": 0})]
     with pytest.raises(ValueError, match="vector"):
         FullMMR().select(cands, query_vec=np.ones(4, dtype=np.float32), k=1)
 
@@ -78,11 +78,11 @@ def test_full_mmr_picks_diverse_with_vectors() -> None:
             Candidate(
                 id=f"p{i}",
                 score=1.0 - i * 0.01,
-                payload={"l1_argmax": c},
+                payload={"codebook_idx": c},
                 vector=v,
             )
         )
     q = centers[0] / np.linalg.norm(centers[0])
     chosen = FullMMR(lambda_=0.3, gamma=0.5).select(cands, query_vec=q, k=2)
-    areas = [c.payload["l1_argmax"] for c in chosen]
+    areas = [c.payload["codebook_idx"] for c in chosen]
     assert len(set(areas)) == 2
